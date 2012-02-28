@@ -30,12 +30,8 @@
       },
       
       'store' : function() {
-        console.log('storing');
-        console.log(this.models);
         localStorage.removeItem('speedDialBookmarks');
-        console.log(JSON.stringify(this.models));
         localStorage['speedDialBookmarks'] = JSON.stringify(this.models);
-        console.log(JSON.parse(localStorage['speedDialBookmarks']));
       }
     });
     
@@ -73,18 +69,15 @@
     });
     
     $('document').ready(function() {
-      console.log(JSON.parse(localStorage['speedDialBookmarks']));
       speedDialBookmarksApp.bkmkgroup = new speedDialBookmarksApp.BookmarkGroup(JSON.parse(localStorage['speedDialBookmarks']));
       speedDialBookmarksApp.bkmkgroup.trigger('updated');
       $('#new').click(function() {
-        console.log('woo');
         chrome.tabs.getSelected(null, function(tab) {
           var title = prompt('Set a title for this speed dial position');
           if (!title) return;
-          bkmkgroup.add({url: tab.url, title: title});
-          bkmkgroup.trigger('updated');
+          speedDialBookmarksApp.bkmkgroup.add({url: tab.url, title: title});
+          speedDialBookmarksApp.bkmkgroup.trigger('updated');
         });
-        console.log(bkmkgroup.models);
       })
     })
 </script>

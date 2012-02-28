@@ -45,7 +45,8 @@
       
       'render' : function() {
         var self = this;
-        var template = '<img src="bkmk.png" alt="<%= title %>" title="<%= title %>" />';
+        if (!this.model.get('icon')) this.model.set({'icon': 'bkmk.png'});
+        var template = '<img style="height:48px;width:48px;" src="<%= icon %>" alt="<%= title %>" title="<%= title %>" />';
         $(this.el).html(_.template(template, this.model.toJSON())).bind('click', function(e) {
           var url = self.model.get('url');
           chrome.tabs.getSelected(null, function (tab) {
@@ -58,7 +59,7 @@
               speedDialBookmarksApp.bkmkgroup.trigger('updated');
             } else {
                chrome.tabs.getSelected(null, function(tab) {
-                speedDialBookmarksApp.bkmkgroup.getByCid(self.model.cid).set({'url' : tab.url});
+                speedDialBookmarksApp.bkmkgroup.getByCid(self.model.cid).set({'url' : tab.url, icon: tab.favIconUrl});
                 speedDialBookmarksApp.bkmkgroup.trigger('updated');
               });
             }
@@ -72,10 +73,10 @@
       speedDialBookmarksApp.bkmkgroup = new speedDialBookmarksApp.BookmarkGroup(JSON.parse(localStorage['speedDialBookmarks']));
       speedDialBookmarksApp.bkmkgroup.trigger('updated');
       $('#new').click(function() {
-        chrome.tabs.getSelected(null, function(tab) {
+        chrome.tabs.getSelected(null, function(tab) {console.log(tab);
           var title = prompt('Set a title for this speed dial position');
           if (!title) return;
-          speedDialBookmarksApp.bkmkgroup.add({url: tab.url, title: title});
+          speedDialBookmarksApp.bkmkgroup.add({url: tab.url, title: title, icon: tab.favIconUrl});
           speedDialBookmarksApp.bkmkgroup.trigger('updated');
         });
       })

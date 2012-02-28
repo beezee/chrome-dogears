@@ -1,0 +1,12 @@
+{
+    "name": "Bookmark Speed Dial",
+    "version": "0.1",
+    "description": "Easy set of overwritable bookmark spots, for keeping track of your place in a number of different sites (like HTML books for instance.)",
+    "browser_action": {
+        "default_icon": "bkmk_small.png",
+        "popup": "popup.html"
+    },
+    "permissions": [
+        "tabs"
+    ]
+}

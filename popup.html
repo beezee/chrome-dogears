@@ -1,0 +1,76 @@
+<script type="text/javascript" src="underscore.js"></script>
+<script type="text/javascript" src="jquery.min.js"></script>
+<script type="text/javascript" src="backbone.js"></script>
+<script>
+    window.addEventListener("load", windowLoaded, false);
+    function windowLoaded() {
+      chrome.tabs.getSelected(null, function(tab) {
+        document.getElementById('currentLink').innerHTML = tab.url;
+      });
+    }
+    
+    var speedDialBookmarksApp = {};
+    
+    speedDialBookmarksApp.Bookmark = Backbone.Model.extend({
+      
+      'initialize' : function() {
+        this.view = new speedDialBookmarksApp.BookmarkView(this);
+      }
+      
+    });
+    
+    speedDialBookmarksApp.BookmarkGroup = Backbone.Collection.extend({
+      'model' : speedDialBookmarksApp.Bookmark,
+      
+      'initialize' : function() {
+        _.bindAll(this, 'render');
+        this.bind('updated', this.render);
+        this.bind('updated', this.store);
+      },
+      
+      'render' : function() {
+        $('#sdbkmks').html('');
+        _.each(this.models, function(model) {
+          model.view.render();
+        })
+      },
+      
+      'store' : function() {
+        localStorage['speedDialBookmarks'] = JSON.stringify(this.models);
+      }
+    });
+    
+    speedDialBookmarksApp.BookmarkView = Backbone.View.extend({
+      'initialize' : function(model) {
+        this.model = model;
+        _.bindAll(this, 'render');
+        this.render();
+      },
+      
+      'render' : function() {
+        var template = '<a href="<%= url %>"><img src="bkmk.png" alt="<%= title %>" title="<%= title %>" /></a>';
+        $(this.el).html(_.template(template, this.model.toJSON()));
+        $('#sdbkmks').append($(this.el));
+      }
+      
+    });
+    
+    $('document').ready(function() {
+      var bkmkgroup = new speedDialBookmarksApp.BookmarkGroup(JSON.parse(localStorage['speedDialBookmarks']));
+      bkmkgroup.trigger('updated');
+      $('#new').click(function() {
+        console.log('woo');
+        chrome.tabs.getSelected(null, function(tab) {
+          bkmkgroup.add({url: tab.url, title: 'title'});
+          bkmkgroup.trigger('updated');
+        });
+        console.log(bkmkgroup.models);
+      })
+    })
+</script>
+
+<p id="currentLink"></p>
+
+<div id="sdbkmks"></div>
+
+<a id="new" style="cursor:pointer">add one</a>

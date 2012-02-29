@@ -75,7 +75,9 @@
     });
     
     $('document').ready(function() {
+      if (JSON.parse(localStorage['speedDialBookmarks']).length)
       speedDialBookmarksApp.bkmkgroup = new speedDialBookmarksApp.BookmarkGroup(JSON.parse(localStorage['speedDialBookmarks']));
+      else speedDialBookmarksApp.bkmkgroup = new speedDialBookmarksApp.BookmarkGroup();
       speedDialBookmarksApp.bkmkgroup.trigger('updated');
       $('#new').click(function() {
         chrome.tabs.getSelected(null, function(tab) {console.log(tab);

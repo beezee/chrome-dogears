@@ -1,5 +1,6 @@
 <script type="text/javascript" src="underscore.js"></script>
 <script type="text/javascript" src="jquery.min.js"></script>
+<script type="text/javascript" src="jquery.ui.min.js"></script>
 <script type="text/javascript" src="backbone.js"></script>
 <script>
     
@@ -37,6 +38,8 @@
     
     speedDialBookmarksApp.BookmarkView = Backbone.View.extend({
       
+      'tagName' : 'li',
+      
       'attributes' : {
         'style' : 'height:50px;width:50px;'
       },
@@ -50,9 +53,10 @@
       'render' : function() {
         var self = this;
         if (!this.model.get('icon')) this.model.set({'icon': 'bkmk.png'});
-        this.model.attributes.style = (this.model.get('icon') != 'bkmk.png') ? 'height:38px;width:38px;margin:4px;margin-bottom:8px;' : 'height:48px;width:48px;';
-        var template = '<img style="<%= style %>" src="<%= icon %>" alt="<%= title %>" title="<%= title %>" />';
+        this.model.attributes.dims = (this.model.get('icon') != 'bkmk.png') ? 'height:38px;width:38px;margin-top:5px;margin-left:5px;' : 'height:48px;width:48px;';
+        var template = '<img style="<%= dims %>" src="<%= icon %>" alt="<%= title %>" title="<%= title %>" />';
         $(this.el).html(_.template(template, this.model.toJSON())).bind('click', function(e) {
+            if ($(this).data('dragged') == 'yes') { $(this).data('dragged') = 'no'; return $(this);}
           var url = self.model.get('url');
           chrome.tabs.getSelected(null, function (tab) {
              chrome.tabs.update(tab.id, {url: url});
@@ -68,7 +72,7 @@
                 speedDialBookmarksApp.bkmkgroup.trigger('updated');
               });
             }
-        }).css('float', 'left');
+        }).css({float:'left', height: '50px', width: '50px', overflow: 'hidden'});
         $('#sdbkmks').append($(this.el));
       }
       
@@ -79,16 +83,33 @@
         speedDialBookmarksApp.bkmkgroup = new speedDialBookmarksApp.BookmarkGroup(init);
         speedDialBookmarksApp.bkmkgroup.trigger('updated');
         $('#new').click(function() {
-        chrome.tabs.getSelected(null, function(tab) {console.log(tab);
+        chrome.tabs.getSelected(null, function(tab) {
           var title = prompt('Set a title for this speed dial position');
           if (!title) return;
           speedDialBookmarksApp.bkmkgroup.add({url: tab.url, title: title, icon: tab.favIconUrl});
           speedDialBookmarksApp.bkmkgroup.trigger('updated');
         });
-      })
+      });
+      $('#sdbkmks').sortable({start: function() {
+            $(this).data('dragged', 'yes');
+        }, stop: function() {
+            var count = 0;
+            $('#sdbkmks li').each(function() {
+                var url = $(this).attr('url');
+               _.each(speedDialBookmarksApp.bkmkgroup.models, function(model) {
+                   if (model.attributes.url ==  url) {
+                    model.attributes.order = count;
+                   }
+               });
+               count++;
+            });
+            speedDialBookmarksApp.bkmkgroup.comparator = function(model) { return model.get('order');};
+            speedDialBookmarksApp.bkmkgroup.sort();
+            speedDialBookmarksApp.bkmkgroup.store();
+      }});
     })
 </script>
 
-<div id="sdbkmks" style="width:250px;"></div>
-<br /><br />
+<ul id="sdbkmks" style="width:250px;"></ul>
+<br clear="all"/><br />
 <a id="new" style="cursor:pointer;color:blue;float:right;">add one</a>

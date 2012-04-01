@@ -12,6 +12,12 @@
         "popup": "popup.html"
     },
     "permissions": [
-        "tabs"
+        "tabs", "http://*/*", "https://*/*"
+    ],
+    "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["scroll.js"]
+    }
     ]
 }

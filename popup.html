@@ -68,8 +68,13 @@
               speedDialBookmarksApp.bkmkgroup.trigger('updated');
             } else {
                chrome.tabs.getSelected(null, function(tab) {
-                speedDialBookmarksApp.bkmkgroup.getByCid(self.model.cid).set({'url' : tab.url, icon: tab.favIconUrl});
-                speedDialBookmarksApp.bkmkgroup.trigger('updated');
+                chrome.tabs.sendRequest(tab.id, {}, function(response) {
+                        var scroll = response.scroll;
+                        console.log(response, /\#.*$/.test(tab.url));
+                        var url = (/\#.*$/.test(tab.url)) ? tab.url : tab.url + '#de_scroll_' + scroll;
+                        speedDialBookmarksApp.bkmkgroup.getByCid(self.model.cid).set({'url' : url, icon: tab.favIconUrl});
+                        speedDialBookmarksApp.bkmkgroup.trigger('updated');
+                });
               });
             }
         }).css({float:'left', height: '50px', width: '50px', overflow: 'hidden'});
@@ -86,8 +91,12 @@
         chrome.tabs.getSelected(null, function(tab) {
           var title = prompt('Set a title for this speed dial position');
           if (!title) return;
-          speedDialBookmarksApp.bkmkgroup.add({url: tab.url, title: title, icon: tab.favIconUrl});
-          speedDialBookmarksApp.bkmkgroup.trigger('updated');
+            chrome.tabs.sendRequest(tab.id, {}, function(response) {
+                    var scroll = response.scroll;
+                    var url = (/\#.*$/.test(tab.url)) ? tab.url : tab.url + '#de_scroll_' + scroll;
+                    speedDialBookmarksApp.bkmkgroup.add({url: url, title: title, icon: tab.favIconUrl});
+                    speedDialBookmarksApp.bkmkgroup.trigger('updated');
+            });
         });
       });
       $('#sdbkmks').sortable({start: function() {
